@@ -1,0 +1,526 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@200;300;400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link id="all-fonts-link-font-geist" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap">
+
+    <!-- Scripts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+                        display: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        geist: ['"Geist"', 'sans-serif'],
+                    },
+                    colors: {
+                        canvas: '#FAFAFA',
+                        surface: '#FFFFFF',
+                        obsidian: '#FF4F84',
+                        charcoal: '#333333',
+                        subtle: '#737373',
+                        border: '#E5E5E5',
+                        accent: '#252525',
+                        primary: '#000000',
+                        brandPink: '#EC4899',
+                    },
+                    letterSpacing: {
+                        tight: '-0.02em',
+                        tighter: '-0.04em',
+                    },
+                    animation: {
+                        'shimmer': 'shimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+                    },
+                    keyframes: {
+                        shimmer: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(100%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #FAFAFA;
+            color: #FF4F84;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .technical-grid {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+            mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
+        }
+
+        .premium-card {
+            background: #FFFFFF;
+            border: 1px solid #EAEAEA;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02), 0 8px 16px -4px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .premium-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03), 0 12px 24px -6px rgba(0, 0, 0, 0.06);
+            border-color: #D4D4D4;
+        }
+
+        .view {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .view.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .signal-path {
+            stroke-dasharray: 60 400;
+            stroke-dashoffset: 60;
+            animation: signal-flow 6s linear infinite;
+        }
+
+        @keyframes signal-flow {
+            0% {
+                stroke-dashoffset: 60;
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            90% {
+                stroke-dashoffset: -360;
+                opacity: 1;
+            }
+
+            95% {
+                opacity: 0;
+            }
+
+            100% {
+                stroke-dashoffset: -360;
+                opacity: 0;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Background Elements -->
+    <div class="fixed inset-0 z-0 technical-grid pointer-events-none"></div>
+    <div id="canvas-container" class="fixed inset-0 z-0 opacity-100"></div>
+
+    <!-- NAVIGATION -->
+    <nav
+        class="fixed top-0 w-full z-50 border-b border-black/[0.03] bg-white/70 backdrop-blur-xl transition-all duration-500">
+        <div class="max-w-screen-2xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-12">
+                <div class="flex items-center group cursor-pointer">
+                    <a href='/'>
+                        <img src="logo.png" alt="JOBREAKER"
+                            class="h-16 w-auto transition-transform group-hover:scale-105">
+                    </a>
+                </div>
+
+                <div class="hidden lg:flex items-center gap-8">
+                    <a href="#lifecycle"
+                        class="text-[13px] font-semibold text-charcoal hover:text-black transition-colors uppercase tracking-widest">Fonctionnement</a>
+                    <a href="#pricing"
+                        class="text-[13px] font-semibold text-charcoal hover:text-black transition-colors uppercase tracking-widest">Tarifs</a>
+                    <a class='text-[13px] font-semibold text-charcoal hover:text-black transition-colors uppercase tracking-widest'
+                        href='/dashboard'>Dashboard</a>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="auth-buttons flex items-center gap-4">
+                    <a class='hidden sm:block text-[13px] font-bold text-black px-6 hover:opacity-70 transition-opacity'
+                        href='#' onclick="openLoginModal(); return false;">CONNEXION</a>
+                    <a class='h-11 px-8 bg-black text-white rounded-full text-[13px] font-bold hover:bg-neutral-800 transition-all shadow-[0_10px_20px_-10px_rgba(0,0,0,0.2)] flex items-center'
+                        href='#' onclick="openLoginModal(); if(!isSignUpMode) toggleAuthMode(); return false;">
+                        DÉMARRER
+                    </a>
+                </div>
+                <div class="user-profile hidden items-center gap-4">
+                    <span class="user-email text-[13px] font-bold text-black px-6"></span>
+                    <button onclick="signOut()"
+                        class='h-11 px-8 bg-black text-white rounded-full text-[13px] font-bold hover:bg-neutral-800 transition-all shadow-[0_10px_20px_-10px_rgba(0,0,0,0.2)] flex items-center'>
+                        DÉCONNEXION
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- VIEW: LANDING -->
+    <!-- VIEW: LANDING -->
+    <main id="view-landing" class="view active">
+        <!-- HERO -->
+        <section class="relative pt-40 pb-20 px-6 overflow-hidden">
+            <div class="max-w-screen-2xl mx-auto flex flex-col items-center text-center relative z-10">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/5 text-black text-[10px] font-bold tracking-[0.2em] mb-8 uppercase">
+                    <span class="w-1.5 h-1.5 rounded-full bg-brandPink animate-pulse"></span>
+                    Système de Mutation IA v2.0
+                </div>
+
+                <h1
+                    class="max-w-5xl font-display text-7xl md:text-9xl font-black tracking-tighter text-black mb-8 leading-[0.9]">
+                    Mutation des <span class="text-white drop-shadow-[0_0_1px_rgba(0,0,0,1)]">Métiers.</span><br>
+                    <span
+                        class="italic font-serif font-light text-8xl md:text-[140px] lowercase tracking-normal">Traçabilité</span>
+                    Absolue.
+                </h1>
+
+                <p class="max-w-2xl text-charcoal text-lg md:text-xl mb-12 font-medium leading-relaxed">
+                    Jobreaker cartographie l'évolution du marché du travail en temps réel.
+                    <span class="text-black font-bold">Ne craignez pas le changement, auditez-le.</span>
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center gap-6 mb-32">
+                    <a class='h-16 px-10 bg-black text-white rounded-xl text-sm font-bold hover:scale-105 transition-all shadow-2xl flex items-center gap-3'
+                        href='#' onclick="openLoginModal(); if(!isSignUpMode) toggleAuthMode(); return false;">
+                        LANCER L'AUDIT
+                        <iconify-icon icon="solar:round-alt-arrow-right-bold" class="text-xl"></iconify-icon>
+                    </a>
+                    <div class="flex -space-x-4">
+                        <div class="w-12 h-12 rounded-full border-2 border-canvas bg-neutral-200 overflow-hidden">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+                        </div>
+                        <div class="w-12 h-12 rounded-full border-2 border-canvas bg-neutral-300 overflow-hidden">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Anita" alt="User">
+                        </div>
+                        <div class="w-12 h-12 rounded-full border-2 border-canvas bg-neutral-400 overflow-hidden">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Max" alt="User">
+                        </div>
+                        <div class="px-6 flex items-center">
+                            <span class="text-xs font-bold text-black">+2.4k auditeurs actifs</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HERO VISUAL: NODES -->
+                <div
+                    class="w-full max-w-6xl mx-auto h-[400px] relative rounded-3xl border border-black/[0.05] bg-white shadow-sm overflow-hidden flex items-center justify-center group">
+                    <div class="absolute inset-0 technical-grid opacity-50"></div>
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div class="flex items-center gap-24 mb-12">
+                            <div
+                                class="node-logic w-20 h-20 rounded-2xl bg-black flex items-center justify-center text-white shadow-2xl transition-transform group-hover:scale-110">
+                                <iconify-icon icon="solar:database-bold" class="text-3xl"></iconify-icon>
+                            </div>
+                            <div
+                                class="node-logic w-20 h-20 rounded-2xl bg-white border border-black/10 flex items-center justify-center text-black shadow-sm transition-transform group-hover:scale-110">
+                                <iconify-icon icon="solar:cpu-bold" class="text-3xl"></iconify-icon>
+                            </div>
+                            <div
+                                class="node-logic w-20 h-20 rounded-2xl bg-black flex items-center justify-center text-white shadow-2xl transition-transform group-hover:scale-110">
+                                <iconify-icon icon="solar:user-bold" class="text-3xl"></iconify-icon>
+                            </div>
+                        </div>
+                        <div class="font-mono text-[10px] tracking-[0.3em] font-bold text-black/20 uppercase">Network
+                            Consensus Established</div>
+                    </div>
+                    <!-- SVGs for connecting lines -->
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20">
+                        <path d="M 400 200 Q 600 100 800 200" fill="none" stroke="black" stroke-width="2"
+                            class="signal-path"></path>
+                        <path d="M 400 200 Q 600 300 800 200" fill="none" stroke="black" stroke-width="2"
+                            class="signal-path" style="animation-delay: -3s;"></path>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- MUTATION LIFECYCLE (Scroll Section) -->
+        <section id="lifecycle" class="py-40 bg-black relative overflow-hidden">
+            <div class="max-w-screen-2xl mx-auto px-6 grid md:grid-cols-2 gap-20 items-center">
+                <div class="sticky top-40 h-[500px] flex items-center justify-center">
+                    <div class="relative w-80 h-80">
+                        <div
+                            class="absolute inset-0 rounded-full border border-white/10 animate-[spin_10s_linear_infinite]">
+                        </div>
+                        <div
+                            class="absolute inset-4 rounded-full border border-white/5 animate-[spin_15s_linear_infinite_reverse]">
+                        </div>
+                        <div class="avatar-center absolute inset-0 flex items-center justify-center">
+                            <div
+                                class="w-32 h-32 rounded-3xl bg-brandPink shadow-[0_0_50px_rgba(236,72,153,0.3)] flex items-center justify-center transition-all duration-500">
+                                <iconify-icon icon="solar:bolt-circle-bold" class="text-white text-5xl"></iconify-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-32 py-20">
+                    <div class="lifecycle-step opacity-30 transition-opacity duration-500" data-step="1">
+                        <div class="text-brandPink font-mono text-sm font-bold mb-4">01 — DÉTECTION</div>
+                        <h3 class="text-white text-4xl font-black tracking-tight mb-6">Scanning Global des Signaux</h3>
+                        <p class="text-white/50 text-xl font-medium">Nos algorithmes patrouillent les places de marché
+                            et réseaux pro pour identifier les mutations de compétences avant qu'elles ne deviennent la
+                            norme.</p>
+                    </div>
+                    <div class="lifecycle-step opacity-30 transition-opacity duration-500" data-step="2">
+                        <div class="text-brandPink font-mono text-sm font-bold mb-4">02 — ANALYSE</div>
+                        <h3 class="text-white text-4xl font-black tracking-tight mb-6">Évaluation du Poids de l'IA</h3>
+                        <p class="text-white/50 text-xl font-medium">Nous quantifions l'impact des nouveaux modèles d'IA
+                            sur chaque intitulé de poste pour vous donner un score de risque et d'opportunité.</p>
+                    </div>
+                    <div class="lifecycle-step opacity-30 transition-opacity duration-500" data-step="3">
+                        <div class="text-brandPink font-mono text-sm font-bold mb-4">03 — MATCHING</div>
+                        <h3 class="text-white text-4xl font-black tracking-tight mb-6">Consensus Offre / Profil</h3>
+                        <p class="text-white/50 text-xl font-medium">Seules les opportunités en phase avec votre
+                            trajectoire d'évolution sont présentées. Une curation sans bruit.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRICING -->
+        <section id="pricing" class="py-40 bg-white relative overflow-hidden">
+            <div class="max-w-screen-2xl mx-auto px-6 relative z-10">
+                <div class="mb-24 text-center">
+                    <h2 class="text-6xl font-black tracking-tighter mb-6">Investissez dans votre <span
+                            class="italic font-serif font-light text-7xl lowercase">trajectoire</span>.</h2>
+                    <p class="text-charcoal text-xl font-medium max-w-2xl mx-auto">Choisissez le niveau d'audit adapté à
+                        votre ambition.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Basic -->
+                    <div
+                        class="pricing-transition group p-10 rounded-[40px] border border-black/[0.05] bg-canvas flex flex-col hover:shadow-2xl hover:scale-[1.02] cursor-pointer">
+                        <div class="mb-10">
+                            <div class="text-[10px] font-bold tracking-[0.2em] uppercase text-black/40 mb-4">ACCÈS LIBRE
+                            </div>
+                            <div class="text-5xl font-black mb-2">0€<span class="text-lg text-black/20">/mois</span>
+                            </div>
+                            <p class="text-charcoal font-medium">Pour surveiller le marché.</p>
+                        </div>
+                        <ul class="space-y-4 mb-10 flex-grow">
+                            <li class="flex items-center gap-3 text-sm font-bold text-black">
+                                <iconify-icon icon="solar:check-circle-bold" class="text-black text-xl"></iconify-icon>
+                                5 audits / jour
+                            </li>
+                            <li class="flex items-center gap-3 text-sm font-bold text-black">
+                                <iconify-icon icon="solar:check-circle-bold" class="text-black text-xl"></iconify-icon>
+                                Feed temps réel
+                            </li>
+                        </ul>
+                        <a class='w-full h-14 rounded-2xl border-2 border-black text-black font-black hover:bg-black hover:text-white transition-all flex items-center justify-center'
+                            href='#'
+                            onclick="openLoginModal(); if(!isSignUpMode) toggleAuthMode(); return false;">S'INSCRIRE</a>
+                    </div>
+
+                    <!-- PRO -->
+                    <div
+                        class="pricing-transition group p-10 rounded-[40px] bg-black text-white flex flex-col shadow-2xl scale-105 z-20 cursor-pointer">
+                        <div class="mb-10">
+                            <div
+                                class="inline-block px-3 py-1 rounded-full bg-brandPink text-[10px] font-bold tracking-[0.2em] uppercase mb-4">
+                                RECOMMANDÉ</div>
+                            <div class="text-5xl font-black mb-2">12€<span class="text-lg text-white/20">/mois</span>
+                            </div>
+                            <p class="text-white/60 font-medium">L'audit complet, sans limite.</p>
+                        </div>
+                        <ul class="space-y-4 mb-10 flex-grow">
+                            <li class="flex items-center gap-3 text-sm font-bold">
+                                <iconify-icon icon="solar:check-circle-bold"
+                                    class="text-brandPink text-xl"></iconify-icon>
+                                Audits illimités
+                            </li>
+                            <li class="flex items-center gap-3 text-sm font-bold">
+                                <iconify-icon icon="solar:check-circle-bold"
+                                    class="text-brandPink text-xl"></iconify-icon>
+                                Analyse Skill-Gap IA
+                            </li>
+                            <li class="flex items-center gap-3 text-sm font-bold">
+                                <iconify-icon icon="solar:check-circle-bold"
+                                    class="text-brandPink text-xl"></iconify-icon>
+                                Alertes Mutation SMS
+                            </li>
+                        </ul>
+                        <a class='w-full h-14 rounded-2xl bg-brandPink text-white font-black hover:scale-105 transition-all flex items-center justify-center'
+                            href='#'
+                            onclick="openLoginModal(); if(!isSignUpMode) toggleAuthMode(); return false;">CHOISIR
+                            PRO</a>
+                    </div>
+
+                    <!-- Enterprise -->
+                    <div
+                        class="pricing-transition group p-10 rounded-[40px] border border-black/[0.05] bg-canvas flex flex-col hover:shadow-2xl hover:scale-[1.02] cursor-pointer">
+                        <div class="mb-10">
+                            <div class="text-[10px] font-bold tracking-[0.2em] uppercase text-black/40 mb-4">EQUIPE
+                            </div>
+                            <div class="text-5xl font-black mb-2">Sur Devis</div>
+                            <p class="text-charcoal font-medium">Recrutement & Stratégie.</p>
+                        </div>
+                        <ul class="space-y-4 mb-10 flex-grow">
+                            <li class="flex items-center gap-3 text-sm font-bold text-black">
+                                <iconify-icon icon="solar:check-circle-bold" class="text-black text-xl"></iconify-icon>
+                                API Access
+                            </li>
+                            <li class="flex items-center gap-3 text-sm font-bold text-black">
+                                <iconify-icon icon="solar:check-circle-bold" class="text-black text-xl"></iconify-icon>
+                                Support Dédié
+                            </li>
+                        </ul>
+                        <button
+                            class="w-full h-14 rounded-2xl border-2 border-black text-black font-black hover:bg-black hover:text-white transition-all">CONTACTER</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="py-20 px-6 border-t border-black/[0.03]">
+            <div class="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
+                <div class="max-w-sm">
+                    <div class="mb-6">
+                        <img src="logo.png" alt="JOBREAKER" class="h-16 w-auto">
+                    </div>
+                    <p class="text-charcoal font-medium">La traçabilité absolue des opportunités dans l'ère de la
+                        mutation IA.</p>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-20">
+                    <div>
+                        <div class="text-[10px] font-bold tracking-[0.2em] uppercase mb-6">Produit</div>
+                        <ul class="space-y-4 text-sm font-bold text-charcoal">
+                            <li><a href="#" class="hover:text-black">Audit</a></li>
+                            <li><a href="#" class="hover:text-black">Mutation Index</a></li>
+                            <li><a href="#" class="hover:text-black">Pricing</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold tracking-[0.2em] uppercase mb-6">Société</div>
+                        <ul class="space-y-4 text-sm font-bold text-charcoal">
+                            <li><a href="#" class="hover:text-black">Archive</a></li>
+                            <li><a href="#" class="hover:text-black">Consensus</a></li>
+                            <li><a href="#" class="hover:text-black">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="max-w-screen-2xl mx-auto mt-20 pt-10 border-t border-black/[0.03] flex justify-between items-center text-[10px] font-bold tracking-widest text-black/20 uppercase">
+                <span>© 2026 JOBREAKER INC.</span>
+                <span>SECURED BY NETWORK CONSENSUS</span>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal"
+        style="display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+        <div
+            style="background: white; padding: 2.5rem; border-radius: 1rem; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+            <h2 id="modalTitle"
+                style="margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 800; color: #111827; text-align: center;">
+                Se connecter</h2>
+
+            <!-- Google Auth Button -->
+            <button type="button" onclick="signInWithGoogle()"
+                style="width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: 500; background: white; color: #374151; border: 1px solid #D1D5DB; border-radius: 0.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background-color 0.2s;"
+                onmouseover="this.style.backgroundColor='#F9FAFB'" onmouseout="this.style.backgroundColor='white'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4" />
+                    <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853" />
+                    <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05" />
+                    <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335" />
+                </svg>
+                Continuer avec Google
+            </button>
+
+            <div style="text-align: center; margin: 1.5rem 0; color: #6B7280; font-size: 0.875rem; position: relative;">
+                <hr
+                    style="border: none; border-top: 1px solid #E5E7EB; position: absolute; top: 50%; width: 100%; z-index: 1;">
+                <span style="background: white; padding: 0 10px; position: relative; z-index: 2;">ou avec email</span>
+            </div>
+
+            <form id="loginForm" onsubmit="handleAuthSubmit(event)">
+                <div style="margin-bottom: 1rem;">
+                    <label for="email"
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Email</label>
+                    <input type="email" id="email" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#3B6DF6'" onblur="this.style.borderColor='#D1D5DB'">
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="password"
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Mot
+                        de passe</label>
+                    <input type="password" id="password" required
+                        style="width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.5rem; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#3B6DF6'" onblur="this.style.borderColor='#D1D5DB'">
+                </div>
+                <button type="submit" id="submitBtn" class="btn btn-primary"
+                    style="width: 100%; padding: 0.75rem; font-size: 1rem; justify-content: center; background: #3B6DF6; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">Se
+                    connecter</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #4B5563;">
+                <span id="toggleText">Pas encore de compte ?</span>
+                <button type="button" onclick="toggleAuthMode()"
+                    style="background: none; border: none; color: #3B6DF6; font-weight: 600; cursor: pointer;">S'inscrire</button>
+            </div>
+
+            <button type="button" onclick="closeLoginModal()"
+                style="margin-top: 1rem; width: 100%; padding: 0.75rem; font-size: 0.875rem; color: #6B7280; background: transparent; border: none; cursor: pointer;">Annuler</button>
+        </div>
+    </div>
+
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof app !== 'undefined' && app.init) {
+                app.init();
+            }
+        });
+    </script>
+</body>
+
+</html>
