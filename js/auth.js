@@ -1,4 +1,6 @@
 // Logique d'authentification pour GPTBreaker
+window.addEventListener('error', (e) => alert('GLOBAL ERROR: ' + e.message + ' at ' + e.filename + ':' + e.lineno));
+window.addEventListener('unhandledrejection', (e) => alert('PROMISE REJECTION: ' + (e.reason && e.reason.message ? e.reason.message : e.reason)));
 
 let isSignUpMode = false;
 let authSubscription = null;
@@ -18,7 +20,8 @@ function getAuthRedirectUrl() {
         return null;
     }
 
-    return `${window.location.origin}${window.location.pathname}`;
+    const path = window.location.pathname === '/' ? '/index.html' : window.location.pathname;
+    return `${window.location.origin}${path}`;
 }
 
 function setFormPendingState(isPending) {
@@ -85,6 +88,10 @@ function getFriendlyAuthErrorMessage(error, mode) {
 
     if (message.includes('password should be at least')) {
         return "Le mot de passe doit contenir au moins 8 caractères.";
+    }
+
+    if (message.includes('redirect') || message.includes('redirect_to')) {
+        return `Le domaine actuel (${window.location.origin}) n'est pas autorisé dans Supabase Auth. Ajoute cette URL exacte dans Site URL et Redirect URLs.`;
     }
 
     if (mode === 'google') {
@@ -292,6 +299,62 @@ async function signOut() {
     await checkAuthStatus();
 }
 
+function bindAuthControls() {
+    document.querySelectorAll('[data-open-login]').forEach((trigger) => {
+        trigger.addEventListener('click', (event) => {
+            event.preventDefault();
+            openLoginModal();
+        });
+    });
+
+    document.querySelectorAll('[data-sign-out]').forEach((trigger) => {
+        trigger.addEventListener('click', () => {
+            signOut();
+        });
+    });
+
+    const googleBtn = document.querySelector('[data-google-auth]');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', () => {
+            signInWithGoogle();
+        });
+        googleBtn.addEventListener('mouseenter', () => {
+            googleBtn.style.backgroundColor = '#F9FAFB';
+        });
+        googleBtn.addEventListener('mouseleave', () => {
+            googleBtn.style.backgroundColor = 'white';
+        });
+    }
+
+    const form = document.getElementById('loginForm');
+    if (form) {
+        form.addEventListener('submit', handleAuthSubmit);
+    }
+
+    document.querySelectorAll('#email, #password').forEach((input) => {
+        input.addEventListener('focus', () => {
+            input.style.borderColor = '#3B6DF6';
+        });
+        input.addEventListener('blur', () => {
+            input.style.borderColor = '#D1D5DB';
+        });
+    });
+
+    const toggleBtn = document.querySelector('[data-auth-toggle]');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            toggleAuthMode();
+        });
+    }
+
+    const closeBtn = document.querySelector('[data-close-login]');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            closeLoginModal();
+        });
+    }
+}
+
 function bindModalInteractions() {
     const modal = document.getElementById('loginModal');
     if (!modal) {
@@ -329,6 +392,7 @@ function subscribeToAuthChanges() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    bindAuthControls();
     bindModalInteractions();
     subscribeToAuthChanges();
     await checkAuthStatus();
