@@ -1,9 +1,9 @@
-// Configuration Supabase pour GPTBreaker (Relié au projet Jobreaker)
-const _supabaseUrl = 'https://udychrmqcmjdofebdvof.supabase.co';
-const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkeWNocm1xY21qZG9mZWJkdm9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzNjUyNTQsImV4cCI6MjA4MTk0MTI1NH0.X7SEnddtzRQgnyFRFckM_IdAbWxdG3eGDxM4YQt1L5s';
+// Configuration Supabase pour gptbreaker
+const _supabaseUrl = 'https://gkmijzltxbpgoyncvrix.supabase.co';
+const _supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrbWlqemx0eGJwZ295bmN2cml4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NTIxNjMsImV4cCI6MjA4ODQyODE2M30.iYjRXGeW6K8mTevgwOqr57yBaKVWTKYBGiuJYPqgjd8';
 
 // Initialisation du client Supabase
-const supabase = window.supabase.createClient(_supabaseUrl, _supabaseKey, {
+window.supabaseClient = window.supabase.createClient(_supabaseUrl, _supabaseKey, {
     auth: {
         flowType: 'pkce',
         autoRefreshToken: true,
@@ -13,4 +13,4 @@ const supabase = window.supabase.createClient(_supabaseUrl, _supabaseKey, {
     },
 });
 
-console.log("Supabase initialisé avec succès !");
+console.log("Nouveau Supabase gptbreaker initialisé avec succès !");

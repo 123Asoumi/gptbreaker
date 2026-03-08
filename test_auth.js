@@ -17,11 +17,6 @@ const { chromium } = require('playwright');
     console.log('Waiting for modal...');
     await page.waitForTimeout(500);
 
-    console.log('Clicking Google auth button...');
-    await page.click('button[data-google-auth]');
-
-    await page.waitForTimeout(2000);
-
     console.log('Filling form and submitting...');
     await page.fill('#email', 'test@test.com');
     await page.fill('#password', 'password123');
